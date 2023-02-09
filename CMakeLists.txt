@@ -8,4 +8,4 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 project(csvreader)
 set(CMAKE_BUILD_TYPE Debug)
-add_executable(csvreader main.cpp)
+add_executable(csvreader main.cpp inout.cpp)
