@@ -1,4 +1,4 @@
-#include "inout.h"
+#include "table.h"
 #include <algorithm>
 #include <charconv>
 #include <fstream>
@@ -17,10 +17,13 @@ Table read(std::string filename) {
         throw std::invalid_argument("input file empty");
     }
     auto header = split(line, ',');
+    // if file is not empty, there's at least one string in header
     if (header[0] != "") {
         throw std::invalid_argument("malformed table: first cell not empty");
     }
-    Table ret(header);
+    Table ret;
+    copy(next(header.begin()), header.end(), back_inserter(ret.header));
+    ret.width = header.size() - 1;
 
     // parse table body
     while (std::getline(in, line)) {
@@ -33,7 +36,7 @@ Table read(std::string filename) {
         if (rowNum.index() != 0) {
             throw std::invalid_argument("malformed table: row number is not a number");
         }
-        ret.rows.insert({get<int>(rowNum), ret.height});
+        ret.rows.push_back(get<int>(rowNum));
         ret.height += 1;
 
         // append to value vector
@@ -43,17 +46,8 @@ Table read(std::string filename) {
 }
 
 std::ostream& operator<<(std::ostream& stream, const Table& table) {
-    // flatten header and row numbers
-    vector<string> flatHeader;
-    transform(table.cols.begin(), table.cols.end(), back_inserter(flatHeader), [](auto elem) { return elem.first; });
-    vector<int> flatNums;
-    transform(table.rows.begin(), table.rows.end(), back_inserter(flatNums), [](auto elem) { return elem.first; });
-    // sorting is required afterwards (maps make find during evaluation easier, but require sorting later)
-    sort(flatHeader.begin(), flatHeader.end(), [&](string l, string r) { return table.cols.at(l) < table.cols.at(r); });
-    sort(flatNums.begin(), flatNums.end(), [&](int l, int r) { return table.rows.at(l) < table.rows.at(r); });
-
     // print header
-    for (const string& col : flatHeader) {
+    for (const string& col : table.header) {
         stream << "," << col;
     }
     stream << "\n";
@@ -61,7 +55,7 @@ std::ostream& operator<<(std::ostream& stream, const Table& table) {
     for (int i = 0; i < table.height; i++) {
         for (int j = -1; j < table.width; j++) {
             if (j < 0) {
-                stream << flatNums[i];
+                stream << table.rows[i];
                 continue;
             }
             cell_t val = table.values[i * table.width + j];
