@@ -10,6 +10,7 @@ int main(int argc, char* argv[]) {
     string filename = argv[1];
     try {
         Table t = read(filename);
+        t.eval();
         cout << t;
     } catch (const std::exception& ex) {
         cout << ex.what() << endl;

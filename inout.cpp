@@ -31,8 +31,16 @@ Table read(std::string filename) {
         if (row.size() != ret.width + 1) {
             throw std::invalid_argument("malformed table: width mismatch");
         }
+        auto cellConv = [](string word) {
+            // put int into variant if cell contains value and string otherwise
+            int val;
+            if (from_chars(word.data(), word.data() + word.size(), val).ec == std::errc())
+                return cell_t{val};
+            else
+                return cell_t{word};
+        };
 
-        cell_t rowNum = parseCell(row[0]);
+        cell_t rowNum = cellConv(row[0]);
         if (rowNum.index() != 0) {
             throw std::invalid_argument("malformed table: row number is not a number");
         }
@@ -40,7 +48,7 @@ Table read(std::string filename) {
         ret.height += 1;
 
         // append to value vector
-        transform(next(row.begin()), row.end(), back_inserter(ret.values), parseCell);
+        transform(next(row.begin()), row.end(), back_inserter(ret.values), cellConv);
     }
     return ret;
 }
@@ -79,13 +87,4 @@ vector<string> split(string line, char sep) {
         ret.push_back(word);
     }
     return ret;
-}
-
-// put int into variant if cell contains value and string otherwise
-cell_t parseCell(string word) {
-    int val;
-    if (from_chars(word.data(), word.data() + word.size(), val).ec == std::errc())
-        return val;
-    else
-        return word;
 }
