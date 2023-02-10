@@ -14,6 +14,7 @@ int main(int argc, char* argv[]) {
         cout << t;
     } catch (const std::exception& ex) {
         cout << ex.what() << endl;
+        return 1;
     }
 
     return 0;

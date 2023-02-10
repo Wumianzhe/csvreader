@@ -15,7 +15,7 @@ struct Table {
     int height = 0;
     // in place modification for now
     void eval();
-    inline cell_t& el(int i, int j) { return values[i * width + j]; }
+    inline cell_t& at(int i, int j) { return values[i * width + j]; }
     // prefer to have these mentioned explicitly
     Table() = default;
     Table(Table&) = default;
